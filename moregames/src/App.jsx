@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import PuzzleGame from './PuzzleGame';
+import PuzzleGame from './games/Puzzle/PuzzleGame';
 import BattleshipGame from './games/Battleship/BattleshipGame';
 import './dashboard.css';
 

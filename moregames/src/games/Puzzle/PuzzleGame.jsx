@@ -14,7 +14,7 @@ import {
 } from './logic/boardUtils';
 import { generateThreePieces } from './logic/pieceUtils';
 import { calculateScore } from './logic/scoreSystem';
-import './index.css';
+import './styles/puzzle.css';
 
 function PuzzleGame({ onBack }) {
   const [board, setBoard] = useState(() => createEmptyBoard());
