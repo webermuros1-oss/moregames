@@ -1,18 +1,17 @@
 // ── Bucle de juego ─────────────────────────────────────────────────────────
-// Exporta funciones de update e inicialización del estado de juego.
 
-import { LEVEL_1, LEVELS }           from './levelData.js';
-import { createPlayer, updatePlayer, tryShoot, tryGrenade, damagePlayer, getPlayerFrame } from './player.js';
-import { createEnemy, updateEnemy, tryEnemyShoot, damageEnemy }                           from './enemies.js';
-import { updateBullets, updateGrenades, updateExplosions, cleanup }                        from './bullets.js';
-import { createCamera, updateCamera }                                                      from './camera.js';
+import { LEVEL_1, LEVELS }                                              from './levelData.js';
+import { createPlayer, updatePlayer, tryShoot, tryPike, damagePlayer, getPlayerFrame } from './player.js';
+import { createEnemy, updateEnemy, tryEnemyShoot, damageEnemy }        from './enemies.js';
+import { updateBullets, updateExplosions, cleanup }                     from './bullets.js';
+import { createCamera, updateCamera }                                   from './camera.js';
 import {
   resolvePlatforms,
   checkBulletsVsEnemies,
   checkBulletsVsPlayer,
-  checkExplosionsVsEnemies,
   checkPlayerVsPrisoners,
   checkPlayerVsEnemyContact,
+  overlaps,
 } from './collisions.js';
 
 export { getPlayerFrame };
@@ -20,17 +19,15 @@ export { getPlayerFrame };
 export const CANVAS_W = 480;
 export const CANVAS_H = 270;
 
-/** Crea el estado inicial de juego para un nivel. */
 export function createGameState(levelIndex = 0) {
   const lvl = LEVELS[levelIndex] ?? LEVEL_1;
   return {
     level:      lvl,
     levelIndex,
-    player:     createPlayer(60, lvl.platforms[0].y - 28),
+    player:     createPlayer(60, lvl.platforms[0].y - 34),
     enemies:    lvl.enemies.map(e => createEnemy(e)),
     prisoners:  lvl.prisoners?.map(p => ({ ...p, w: 14, h: 24, rescued: false })) ?? [],
     bullets:    [],
-    grenades:   [],
     explosions: [],
     camera:     createCamera(),
     tick:       0,
@@ -39,43 +36,25 @@ export function createGameState(levelIndex = 0) {
   };
 }
 
-/**
- * Ejecutar un tick del juego.
- * @param {Object} gs       - estado mutable del juego
- * @param {Object} keys     - { left, right, jump, jumpPressed, shoot, grenade }
- * @param {number} now      - performance.now()
- * @param {Function} onScore - callback(score)
- * @param {Function} onDie
- * @param {Function} onWin
- */
 export function tickGame(gs, keys, now, onScore, onDie, onWin) {
   if (gs.over || gs.won) return;
 
-  const { player, enemies, bullets, grenades, explosions, level, camera } = gs;
+  const { player, enemies, bullets, explosions, level, camera } = gs;
 
-  // ── Jugador: movimiento y acciones ──
+  // ── Acciones del jugador ──
   updatePlayer(player, keys, now, level.width);
 
-  // Disparar
   if (keys.shoot) {
     const b = tryShoot(player, now);
     if (b) bullets.push(b);
   }
-
-  // Granada
-  if (keys.grenadePressed) {
-    keys.grenadePressed = false;
-    const g = tryGrenade(player, now);
-    if (g) grenades.push(g);
+  if (keys.pikePressed) {
+    keys.pikePressed = false;
+    tryPike(player, now);
   }
 
   // ── Plataformas jugador ──
-  const wasOnGround = player.onGround;
   player.onGround = resolvePlatforms(player, level.platforms);
-  if (!wasOnGround && player.onGround) {
-    // Aterrizó
-  }
-  // Evitar caer al vacío (límite inferior del canvas)
   if (player.y + player.h > CANVAS_H + 100) {
     damagePlayer(player, 1, now);
     player.x  = Math.max(camera.x + 40, player.x);
@@ -87,69 +66,65 @@ export function tickGame(gs, keys, now, onScore, onDie, onWin) {
   for (const e of enemies) {
     updateEnemy(e, player, now, level.width);
     e.onGround = resolvePlatforms(e, level.platforms);
-
     const b = tryEnemyShoot(e, player, now);
     if (b) bullets.push(b);
   }
 
   // ── Balas ──
   updateBullets(bullets, level.width);
-
-  // ── Granadas ──
-  updateGrenades(grenades, level.platforms, explosions, now);
-
-  // ── Explosiones ──
   updateExplosions(explosions, now);
 
-  // ── Colisiones balas→enemigos ──
+  // ── Pica: colisión cuerpo a cuerpo ──
+  if (player.pikeHit) {
+    for (const e of enemies) {
+      if (e.state === 'dead') continue;
+      if (overlaps(player.pikeHit, e) && !e._pikeHit) {
+        e._pikeHit = now + 300; // cooldown para no dañar 60 veces por frame
+        damageEnemy(e, 1);
+        if (e.state === 'dead' && !e._scored) {
+          e._scored = true;
+          player.score += e.type === 'boss' ? 5000 : 150;
+          onScore?.(player.score);
+        }
+      }
+    }
+  }
+  // Limpiar cooldown de hit de pica
+  for (const e of enemies) {
+    if (e._pikeHit && now > e._pikeHit) e._pikeHit = 0;
+  }
+
+  // ── Balas → enemigos ──
   checkBulletsVsEnemies(bullets, enemies, (e, dmg) => {
     damageEnemy(e, dmg);
     if (e.state === 'dead' && !e._scored) {
       e._scored = true;
-      const pts = e.type === 'boss' ? 5000 : e.type === 'gunner' ? 300 : 100;
-      player.score += pts;
+      player.score += e.type === 'boss' ? 5000 : 200;
       onScore?.(player.score);
     }
   });
 
-  // ── Colisiones explosiones→enemigos ──
-  checkExplosionsVsEnemies(explosions, enemies, (e, dmg) => {
-    damageEnemy(e, dmg);
-    if (e.state === 'dead' && !e._scored) {
-      e._scored = true;
-      const pts = e.type === 'boss' ? 5000 : e.type === 'gunner' ? 300 : 100;
-      player.score += pts;
-      onScore?.(player.score);
-    }
-  });
+  // ── Balas → jugador ──
+  checkBulletsVsPlayer(bullets, player, (p, dmg) => damagePlayer(p, dmg, now));
 
-  // ── Colisiones balas→jugador ──
-  checkBulletsVsPlayer(bullets, player, (p, dmg) => {
-    damagePlayer(p, dmg, now);
-  });
-
-  // ── Contacto enemigo→jugador ──
-  checkPlayerVsEnemyContact(player, enemies.filter(e => e.type === 'boss'), (p) => {
-    damagePlayer(p, 1, now);
+  // ── Contacto boss / piquero → jugador ──
+  checkPlayerVsEnemyContact(player, enemies.filter(e => e.type === 'boss' || e.type === 'pikeman'), () => {
+    damagePlayer(player, 1, now);
   });
 
   // ── Prisioneros ──
-  checkPlayerVsPrisoners(player, gs.prisoners, (p) => {
+  checkPlayerVsPrisoners(player, gs.prisoners, () => {
     player.score += 500;
     onScore?.(player.score);
   });
 
-  // ── Limpieza ──
   cleanup(bullets);
-  cleanup(grenades);
   cleanup(explosions);
 
-  // ── Cámara ──
   updateCamera(camera, player, level.width, CANVAS_W, CANVAS_H);
 
-  // ── Condición de victoria: llegar a la bandera ──
+  // ── Victoria ──
   if (player.x + player.w >= level.flagX && !gs.won) {
-    // Solo si el boss está muerto (o no hay boss)
     const boss = enemies.find(e => e.type === 'boss');
     if (!boss || boss.state === 'dead') {
       gs.won = true;
@@ -157,9 +132,8 @@ export function tickGame(gs, keys, now, onScore, onDie, onWin) {
     }
   }
 
-  // ── Condición de derrota ──
+  // ── Derrota ──
   if (player.state === 'dead' && !gs.over) {
-    // Esperar un poco antes de game over para ver la animación
     setTimeout(() => { gs.over = true; onDie?.(); }, 1500);
   }
 

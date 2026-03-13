@@ -126,7 +126,7 @@
 
 .tc-jump    { background: rgba(80,160,255,0.2); }
 .tc-shoot   { background: rgba(255,120,20,0.3); }
-.tc-grenade { background: rgba(80,200,80,0.2);  }
+.tc-pike    { background: rgba(200,180,40,0.25); }
 
 /* ── Menú / pantallas de estado ─────────────────────────────────────────── */
 .tercios-menu {

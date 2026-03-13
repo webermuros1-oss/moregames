@@ -1,59 +1,50 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { createGameState, tickGame, CANVAS_W, CANVAS_H, getPlayerFrame } from './logic/gameLoop.js';
+import { createGameState, tickGame, CANVAS_W, CANVAS_H } from './logic/gameLoop.js';
 import { GROUND_Y } from './logic/levelData.js';
 
 // ── Sprites ───────────────────────────────────────────────────────────────
-import sprPlayer   from './img/tercioProtagonista.png';  // 848×1233 → grid 4×5 → frame 212×246
-import sprPikeman  from './img/enemigoPica.png';          // 459×544  → grid 3×4 → frame 153×136
-import sprArcher   from './img/enemigoArco-removebg-preview.png'; // 414×602, transparente
-import sprEffects  from './img/efectosDisparos-removebg-preview.png'; // 282×401 → grid 3×3 → frame 94×133
-import sprBarrel   from './img/barril-removebg-preview.png';  // 83×106
-import sprCannon   from './img/cañon-removebg-preview.png';   // 191×102
-import sprBridge   from './img/puente-removebg-preview.png';  // 203×106
-import sprBg       from './img/tiles2.png';                   // 848×1233 fondo
+import sprPlayer     from './img/tercioProtagonista.png';
+import sprPikeman    from './img/enemigoPica.png';
+import sprArcher     from './img/enemigoArco-removebg-preview.png';
+import sprEffects    from './img/efectosDisparos-removebg-preview.png';
+import sprBarrel     from './img/barril-removebg-preview.png';
+import sprCannon     from './img/cañon-removebg-preview.png';
+import sprBg1        from './img/tiles2.png';
+import sprBg2        from './img/bg2.png';
+import sprGroundTop  from './img/t_ground_top.png';
+import sprGroundBody from './img/t_ground_body.png';
+import sprPlatform   from './img/t_platform.png';
 
 // ── Frame coords (medidos con PIL) ───────────────────────────────────────
 const PL = { fw: 212, fh: 246 };   // player frame
 const EN = { fw: 153, fh: 136 };   // pikeman frame
 const EF = { fw: 94,  fh: 133 };   // effects frame
 
-// Filas del jugador (tercioProtagonista.png):
-//   row 0 (y=0)    : run×4
-//   row 1 (y=246)  : idle/ataque×4
-//   row 2 (y=492)  : salto×4
-//   row 3 (y=738)  : agachado/disparo×4
-//   row 4 (y=984)  : variantes×4
 const PLAYER_FRAMES = {
-  run:  [0,1,2,3].map(c => ({ sx: c*PL.fw, sy: 0,         sw: PL.fw, sh: PL.fh })),
-  idle: [{ sx: 0,        sy: 0,         sw: PL.fw, sh: PL.fh }],
-  jump: [{ sx: 0,        sy: PL.fh*2,   sw: PL.fw, sh: PL.fh }],
-  fall: [{ sx: PL.fw,    sy: PL.fh*2,   sw: PL.fw, sh: PL.fh }],
-  shoot:[{ sx: PL.fw*2,  sy: PL.fh,     sw: PL.fw, sh: PL.fh }],
-  dead: [{ sx: PL.fw*3,  sy: PL.fh*3,   sw: PL.fw, sh: PL.fh }],
+  run:  [0,1,2,3].map(c => ({ sx: c*PL.fw, sy: 0,        sw: PL.fw, sh: PL.fh })),
+  idle: [{ sx: 0,        sy: 0,        sw: PL.fw, sh: PL.fh }],
+  jump: [{ sx: 0,        sy: PL.fh*2,  sw: PL.fw, sh: PL.fh }],
+  fall: [{ sx: PL.fw,    sy: PL.fh*2,  sw: PL.fw, sh: PL.fh }],
+  shoot:[{ sx: PL.fw*2,  sy: PL.fh,    sw: PL.fw, sh: PL.fh }],
+  pike: [{ sx: PL.fw*3,  sy: PL.fh,    sw: PL.fw, sh: PL.fh }],
+  dead: [{ sx: PL.fw*3,  sy: PL.fh*3,  sw: PL.fw, sh: PL.fh }],
 };
 
-// Filas del pikeman (enemigoPica.png):
-//   row 0 (y=0)    : patrulla×3
-//   row 1 (y=136)  : alerta/idle×3
-//   row 2 (y=272)  : disparo/ataque×3
-//   row 3 (y=408)  : muerto/caída×3
 const PIKEMAN_FRAMES = {
-  patrol: [0,1,2].map(c => ({ sx: c*EN.fw, sy: 0,        sw: EN.fw, sh: EN.fh })),
-  alert:  [0,1,2].map(c => ({ sx: c*EN.fw, sy: EN.fh,    sw: EN.fw, sh: EN.fh })),
-  shoot:  [0,1,2].map(c => ({ sx: c*EN.fw, sy: EN.fh*2,  sw: EN.fw, sh: EN.fh })),
-  dead:   [0,1,2].map(c => ({ sx: c*EN.fw, sy: EN.fh*3,  sw: EN.fw, sh: EN.fh })),
+  patrol: [0,1,2].map(c => ({ sx: c*EN.fw, sy: 0,       sw: EN.fw, sh: EN.fh })),
+  alert:  [0,1,2].map(c => ({ sx: c*EN.fw, sy: EN.fh,   sw: EN.fw, sh: EN.fh })),
+  shoot:  [0,1,2].map(c => ({ sx: c*EN.fw, sy: EN.fh*2, sw: EN.fw, sh: EN.fh })),
+  dead:   [0,1,2].map(c => ({ sx: c*EN.fw, sy: EN.fh*3, sw: EN.fw, sh: EN.fh })),
 };
 
-// Arquero (enemigoArco.png, ya transparente):
-//   Cuadrante top-right (x=207..414, y=0..301) = 2 frames de 103×301
 const ARCHER_FRAMES = {
-  patrol: [{ sx:207, sy:0, sw:103, sh:301 }, { sx:310, sy:0, sw:104, sh:301 }],
-  alert:  [{ sx:207, sy:0, sw:103, sh:301 }],
-  shoot:  [{ sx:310, sy:0, sw:104, sh:301 }],
+  patrol: [{ sx:207, sy:0,   sw:103, sh:301 }, { sx:310, sy:0,   sw:104, sh:301 }],
+  alert:  [{ sx:207, sy:0,   sw:103, sh:301 }],
+  shoot:  [{ sx:310, sy:0,   sw:104, sh:301 }],
   dead:   [{ sx:207, sy:301, sw:103, sh:150 }],
 };
 
-// Eliminar fondo blanco
+// ── Eliminar fondo blanco ─────────────────────────────────────────────────
 function processSheet(img, threshold = 238) {
   const c = document.createElement('canvas');
   c.width  = img.naturalWidth;
@@ -69,10 +60,10 @@ function processSheet(img, threshold = 238) {
   return c;
 }
 
-export default function TerciosCanvas({ onScore, onDie, onWin, paused }) {
+export default function TerciosCanvas({ onScore, onDie, onWin, paused, levelIndex = 0 }) {
   const canvasRef  = useRef(null);
   const stateRef   = useRef(null);
-  const keysRef    = useRef({ left:false, right:false, jump:false, jumpPressed:false, shoot:false, grenadePressed:false });
+  const keysRef    = useRef({ left:false, right:false, jump:false, jumpPressed:false, shoot:false, pikePressed:false });
   const imgsRef    = useRef({});
   const rafRef     = useRef(null);
   const pausedRef  = useRef(paused);
@@ -89,18 +80,21 @@ export default function TerciosCanvas({ onScore, onDie, onWin, paused }) {
       i.src = src;
     };
 
-    imgs.bg     = raw(sprBg);      // fondo sin procesar
-    imgs.cannon = raw(sprCannon);
-    imgs.bridge = raw(sprBridge);
-    imgs.archer = raw(sprArcher);  // ya transparente
+    imgs.bg1        = raw(sprBg1);
+    imgs.bg2        = raw(sprBg2);
+    imgs.groundTop  = raw(sprGroundTop);
+    imgs.groundBody = raw(sprGroundBody);
+    imgs.platform   = raw(sprPlatform);
+    imgs.cannon     = raw(sprCannon);
+    imgs.archer     = raw(sprArcher);
 
     proc('player',  sprPlayer,  238);
     proc('pikeman', sprPikeman, 238);
     proc('effects', sprEffects, 240);
     proc('barrel',  sprBarrel,  238);
 
-    stateRef.current = createGameState(0);
-  }, []);
+    stateRef.current = createGameState(levelIndex);
+  }, [levelIndex]);
 
   // ── Teclado ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -109,16 +103,16 @@ export default function TerciosCanvas({ onScore, onDie, onWin, paused }) {
       if (e.code==='ArrowLeft'  || e.code==='KeyA') k.left  = true;
       if (e.code==='ArrowRight' || e.code==='KeyD') k.right = true;
       if ((e.code==='ArrowUp'||e.code==='KeyW'||e.code==='Space') && !e.repeat) { k.jump=true; k.jumpPressed=true; }
-      if (e.code==='KeyJ'||e.code==='KeyZ') k.shoot=true;
-      if ((e.code==='KeyK'||e.code==='KeyX')&&!e.repeat) k.grenadePressed=true;
+      if (e.code==='KeyJ'||e.code==='KeyZ') k.shoot = true;
+      if ((e.code==='KeyK'||e.code==='KeyX') && !e.repeat) k.pikePressed = true;
       if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
     };
     const up = (e) => {
       const k = keysRef.current;
-      if (e.code==='ArrowLeft' ||e.code==='KeyA') k.left =false;
-      if (e.code==='ArrowRight'||e.code==='KeyD') k.right=false;
-      if (e.code==='ArrowUp'||e.code==='KeyW'||e.code==='Space') k.jump=false;
-      if (e.code==='KeyJ'||e.code==='KeyZ') k.shoot=false;
+      if (e.code==='ArrowLeft' ||e.code==='KeyA') k.left  = false;
+      if (e.code==='ArrowRight'||e.code==='KeyD') k.right = false;
+      if (e.code==='ArrowUp'||e.code==='KeyW'||e.code==='Space') k.jump = false;
+      if (e.code==='KeyJ'||e.code==='KeyZ') k.shoot = false;
     };
     window.addEventListener('keydown', down);
     window.addEventListener('keyup',   up);
@@ -128,11 +122,11 @@ export default function TerciosCanvas({ onScore, onDie, onWin, paused }) {
   // ── Botones táctiles ──────────────────────────────────────────────────
   const press = useCallback((k) => {
     const ks = keysRef.current;
-    if (k==='left')    ks.left  = true;
-    if (k==='right')   ks.right = true;
-    if (k==='jump')    { ks.jump=true; ks.jumpPressed=true; }
-    if (k==='shoot')   ks.shoot = true;
-    if (k==='grenade') ks.grenadePressed = true;
+    if (k==='left')  ks.left  = true;
+    if (k==='right') ks.right = true;
+    if (k==='jump')  { ks.jump=true; ks.jumpPressed=true; }
+    if (k==='shoot') ks.shoot = true;
+    if (k==='pike')  ks.pikePressed = true;
   }, []);
   const release = useCallback((k) => {
     const ks = keysRef.current;
@@ -164,21 +158,21 @@ export default function TerciosCanvas({ onScore, onDie, onWin, paused }) {
       <div className="tercios-controls">
         <div className="tc-dpad">
           <button className="tc-btn tc-left"
-            onPointerDown={()=>press('left')}   onPointerUp={()=>release('left')}
+            onPointerDown={()=>press('left')}  onPointerUp={()=>release('left')}
             onPointerLeave={()=>release('left')}>◀</button>
+          <button className="tc-btn tc-jump"
+            onPointerDown={()=>press('jump')}  onPointerUp={()=>release('jump')}
+            onPointerLeave={()=>release('jump')}>↑</button>
           <button className="tc-btn tc-right"
-            onPointerDown={()=>press('right')}  onPointerUp={()=>release('right')}
+            onPointerDown={()=>press('right')} onPointerUp={()=>release('right')}
             onPointerLeave={()=>release('right')}>▶</button>
         </div>
         <div className="tc-actions">
-          <button className="tc-btn tc-jump"
-            onPointerDown={()=>press('jump')}   onPointerUp={()=>release('jump')}
-            onPointerLeave={()=>release('jump')}>↑</button>
           <button className="tc-btn tc-shoot"
-            onPointerDown={()=>press('shoot')}  onPointerUp={()=>release('shoot')}
+            onPointerDown={()=>press('shoot')} onPointerUp={()=>release('shoot')}
             onPointerLeave={()=>release('shoot')}>🔫</button>
-          <button className="tc-btn tc-grenade"
-            onPointerDown={()=>press('grenade')}>💣</button>
+          <button className="tc-btn tc-pike"
+            onPointerDown={()=>press('pike')}>🗡️</button>
         </div>
       </div>
     </div>
@@ -189,18 +183,18 @@ export default function TerciosCanvas({ onScore, onDie, onWin, paused }) {
 //  RENDER
 // ══════════════════════════════════════════════════════════════════════════
 function render(ctx, gs, imgs, now) {
-  const { player, enemies, bullets, grenades, explosions, camera, level, prisoners } = gs;
+  const { player, enemies, bullets, explosions, camera, level, prisoners } = gs;
   const cx = Math.round(camera.x);
 
   ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
 
-  // 1. Fondo estático (no se mueve con la cámara)
-  drawBackground(ctx, imgs);
+  // 1. Fondo estático
+  drawBackground(ctx, imgs, level.bgIndex ?? 0);
 
-  // 2. Decoraciones en primer plano (sobre el fondo, detrás de plataformas)
+  // 2. Decoraciones
   for (const d of level.decorations) drawDecoration(ctx, d, cx, imgs);
 
-  // 3. Plataformas con puente
+  // 3. Plataformas con tileset
   for (const p of level.platforms) drawPlatform(ctx, p, cx, imgs);
 
   // 4. Bandera
@@ -212,16 +206,18 @@ function render(ctx, gs, imgs, now) {
   drawPlayer(ctx, player, cx, imgs, now);
 
   // 6. Proyectiles y efectos
-  for (const b of bullets)   { if (b.active) drawBullet(ctx, b, cx, imgs); }
-  for (const g of grenades)  { if (g.active) drawGrenade(ctx, g, cx, imgs); }
+  for (const b of bullets)    { if (b.active) drawBullet(ctx, b, cx, imgs); }
   for (const ex of explosions){ if (ex.active) drawExplosion(ctx, ex, cx, imgs); }
+
+  // 7. HUD de recarga + flash de pica
+  drawPikeHit(ctx, player, cx);
+  drawReloadBar(ctx, player, now);
 }
 
 // ── Fondo estático ────────────────────────────────────────────────────────
-function drawBackground(ctx, imgs) {
-  const bg = imgs.bg;
+function drawBackground(ctx, imgs, bgIndex) {
+  const bg = bgIndex === 1 ? imgs.bg2 : imgs.bg1;
   if (bg?.complete && bg.naturalWidth > 1) {
-    // Escalar para cubrir el canvas manteniendo proporción (cover)
     const scaleW = CANVAS_W / bg.naturalWidth;
     const scaleH = CANVAS_H / bg.naturalHeight;
     const scale  = Math.max(scaleW, scaleH);
@@ -240,34 +236,35 @@ function drawBackground(ctx, imgs) {
   }
 }
 
-// ── Plataformas con imagen de puente ──────────────────────────────────────
+// ── Utilidad: tile horizontal ─────────────────────────────────────────────
+function tileH(ctx, img, x, y, w, h) {
+  if (!img?.complete || img.naturalWidth <= 1) {
+    ctx.fillStyle = 'rgba(80,60,20,0.85)';
+    ctx.fillRect(x, y, w, h);
+    return;
+  }
+  const tw = img.naturalWidth;
+  for (let dx = 0; dx < w; dx += tw) {
+    const drawW = Math.min(tw, w - dx);
+    ctx.drawImage(img, 0, 0, drawW, img.naturalHeight, x + dx, y, drawW, h);
+  }
+}
+
+// ── Plataformas con tileset ───────────────────────────────────────────────
 function drawPlatform(ctx, p, cx, imgs) {
   const px = p.x - cx;
   if (px + p.w < -20 || px > CANVAS_W + 20) return;
 
   if (p.h >= 24) {
-    // Suelo principal: semi-transparente para que se vea el fondo
-    ctx.fillStyle = 'rgba(40,28,10,0.55)';
-    ctx.fillRect(px, p.y, p.w, p.h);
-    ctx.fillStyle = 'rgba(60,90,30,0.7)';
-    ctx.fillRect(px, p.y, p.w, 4);
-  } else {
-    // Plataformas elevadas → usar sprite del puente
-    const bridge = imgs.bridge;
-    if (bridge?.complete && bridge.naturalWidth > 1) {
-      // Repetir el puente para cubrir el ancho de la plataforma
-      const bw = p.h * (bridge.naturalWidth / bridge.naturalHeight); // ancho escalado a la altura
-      for (let x = px; x < px + p.w; x += bw) {
-        const drawW = Math.min(bw, px + p.w - x);
-        ctx.drawImage(bridge, 0, 0, bridge.naturalWidth * (drawW / bw), bridge.naturalHeight,
-                      x, p.y - p.h * 0.3, drawW, p.h * 1.3);
-      }
-    } else {
-      ctx.fillStyle = 'rgba(80,60,20,0.8)';
-      ctx.fillRect(px, p.y, p.w, p.h);
-      ctx.fillStyle = 'rgba(60,90,30,0.9)';
-      ctx.fillRect(px, p.y, p.w, 3);
+    // Suelo: franja superior (tierra) + cuerpo relleno
+    const topH = Math.min(10, p.h);
+    tileH(ctx, imgs.groundTop,  px, p.y,        p.w, topH);
+    if (p.h > topH) {
+      tileH(ctx, imgs.groundBody, px, p.y + topH, p.w, p.h - topH);
     }
+  } else {
+    // Plataforma elevada: viga de madera
+    tileH(ctx, imgs.platform, px, p.y, p.w, p.h);
   }
 }
 
@@ -317,6 +314,36 @@ function drawDecoration(ctx, d, cx, imgs) {
   }
 }
 
+// ── Flash de ataque de pica ───────────────────────────────────────────────
+function drawPikeHit(ctx, player, cx) {
+  if (!player.pikeHit) return;
+  const ph = player.pikeHit;
+  ctx.save();
+  ctx.globalAlpha = 0.5;
+  ctx.fillStyle = '#ffee44';
+  ctx.fillRect(Math.round(ph.x - cx), Math.round(ph.y), ph.w, ph.h);
+  ctx.restore();
+}
+
+// ── Barra de recarga del arcabuz ──────────────────────────────────────────
+const ARCABUZ_CD = 1600;
+function drawReloadBar(ctx, player, now) {
+  if (!player.reloading) return;
+  const remaining = player.arcabuzCd - now;
+  const pct = Math.max(0, Math.min(1, 1 - remaining / ARCABUZ_CD));
+  const bw = 64, bh = 5;
+  const bx = CANVAS_W / 2 - bw / 2;
+  const by = CANVAS_H - 36;
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillRect(bx - 1, by - 1, bw + 2, bh + 2);
+  ctx.fillStyle = pct < 0.6 ? '#ff5533' : '#66ee88';
+  ctx.fillRect(bx, by, bw * pct, bh);
+  ctx.fillStyle = 'rgba(255,220,80,0.85)';
+  ctx.font = 'bold 7px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('RECARGANDO', CANVAS_W / 2, by - 2);
+}
+
 // ── Jugador ───────────────────────────────────────────────────────────────
 function drawPlayer(ctx, player, cx, imgs, now) {
   const px = Math.round(player.x - cx);
@@ -325,13 +352,8 @@ function drawPlayer(ctx, player, cx, imgs, now) {
 
   const sp = imgs.player;
   if (sp?.width > 1) {
-    const st  = player.state === 'shoot' ? 'shoot'
-              : player.state === 'jump'  ? 'jump'
-              : player.state === 'fall'  ? 'fall'
-              : player.state === 'dead'  ? 'dead'
-              : player.state === 'run'   ? 'run'
-              : 'idle';
-    const frames = PLAYER_FRAMES[st] ?? PLAYER_FRAMES.idle;
+    const st = player.state in PLAYER_FRAMES ? player.state : 'idle';
+    const frames = PLAYER_FRAMES[st];
     const fi     = Math.floor(now / 130) % frames.length;
     const f      = frames[fi];
     ctx.save();
@@ -368,13 +390,10 @@ function drawEnemy(ctx, e, cx, imgs, now) {
   const py = Math.round(e.y);
   if (px+e.w < -20 || px > CANVAS_W+20) return;
 
-  const isBoss   = e.type === 'boss';
-  const isArcher = e.type === 'gunner';
-
-  // Seleccionar spritesheet y frames
+  const isArcher = e.type === 'archer';
   let sp, frameSet;
   if (isArcher) {
-    sp = imgs.archer;  // ya transparente, sin procesado
+    sp = imgs.archer;
     frameSet = ARCHER_FRAMES;
   } else {
     sp = imgs.pikeman;
@@ -407,13 +426,13 @@ function drawEnemy(ctx, e, cx, imgs, now) {
   if (e.maxHp > 1 && e.state!=='dead') {
     const pct = e.hp / e.maxHp;
     ctx.fillStyle='rgba(80,0,0,0.7)'; ctx.fillRect(px, py-6, e.w, 3);
-    ctx.fillStyle = isBoss ? '#ff4400' : '#ff8866';
+    ctx.fillStyle = e.type==='boss' ? '#ff4400' : '#ff8866';
     ctx.fillRect(px, py-6, e.w*pct, 3);
   }
 }
 
 function drawEnemyFallback(ctx, e, px, py) {
-  const color = e.type==='boss' ? '#3a0a0a' : e.type==='gunner' ? '#6b1a4a' : '#8b1a1a';
+  const color = e.type==='boss' ? '#3a0a0a' : e.type==='archer' ? '#6b1a4a' : '#8b1a1a';
   ctx.save();
   if (e.state==='dead') ctx.globalAlpha=0.4;
   if (e.facing===-1){ctx.translate(px+e.w,py);ctx.scale(-1,1);ctx.translate(-e.w,0);}
@@ -432,26 +451,12 @@ function drawBullet(ctx, b, cx, imgs) {
   const sp = imgs.effects;
 
   if (sp?.width > 1 && b.owner==='player') {
-    // Fila 2 (y=266), col 0 = bala de mosquete
     ctx.drawImage(sp, 0, EF.fh*2, EF.fw, EF.fh, px-5, py-5, 14, 10);
   } else {
     ctx.fillStyle = b.owner==='player' ? '#ffdd44' : '#ff4444';
     ctx.fillRect(px, py, b.w, b.h);
     ctx.fillStyle = b.owner==='player' ? 'rgba(255,255,200,0.5)' : 'rgba(255,100,100,0.4)';
     ctx.fillRect(px-1,py-1,b.w+2,b.h+2);
-  }
-}
-
-// ── Granada ───────────────────────────────────────────────────────────────
-function drawGrenade(ctx, g, cx, imgs) {
-  const px = Math.round(g.x - cx);
-  const py = Math.round(g.y);
-  const sp = imgs.barrel;
-  if (sp?.width > 1) {
-    ctx.drawImage(sp, 0,0,83,106, px-5, py-5, 14, 18);
-  } else {
-    ctx.fillStyle='#5a4020';
-    ctx.beginPath(); ctx.arc(px+4,py+4,5,0,Math.PI*2); ctx.fill();
   }
 }
 
@@ -462,10 +467,9 @@ function drawExplosion(ctx, ex, cx, imgs) {
   const sp  = imgs.effects;
 
   if (sp?.width > 1) {
-    // Frames 0-2: fuego (fila 0), frames 3-5: humo (fila 1)
-    const idx = Math.min(ex.frame, 5);
-    const row = idx < 3 ? 0 : 1;
-    const col = idx % 3;
+    const idx  = Math.min(ex.frame, 5);
+    const row  = idx < 3 ? 0 : 1;
+    const col  = idx % 3;
     const size = ex.r * (0.5 + pct * 0.8);
     ctx.save();
     ctx.globalAlpha = 1 - pct * 0.7;
