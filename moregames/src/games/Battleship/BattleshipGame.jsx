@@ -7,14 +7,16 @@ import {
 import './styles/battleship.css';
 
 // ── Image assets ───────────────────────────────────────────────────────────
-import imgPortaviones      from '../img/portaviones-removebg-preview.png';
-import imgPortavionesFire  from '../img/portavionesFire-removebg-preview.png';
-import imgBuque            from '../img/buque-removebg-preview.png';
-import imgBuqueFuego       from '../img/buqueFuego-removebg-preview.png';
-import imgFragata          from '../img/fragata-removebg-preview.png';
-import imgFragataVertical  from '../img/fragataVertical-removebg-preview.png';
-import imgSubmarino        from '../img/submarino-removebg-preview.png';
-import imgSubmarinoVertical from '../img/submarinoVertical-removebg-preview.png';
+import imgPortaviones        from '../img/portaviones-removebg-preview.png';
+import imgPortavionesFire    from '../img/portavionesFire-removebg-preview.png';
+import imgPortavionesVertical from '../img/portavionesVertical-removebg-preview.png';
+import imgBuque              from '../img/buque-removebg-preview.png';
+import imgBuqueFuego         from '../img/buqueFuego-removebg-preview.png';
+import imgDestructorVertical from '../img/destructorVertical-removebg-preview.png';
+import imgFragata            from '../img/fragata-removebg-preview.png';
+import imgFragataVertical    from '../img/fragataVertical-removebg-preview.png';
+import imgSubmarino          from '../img/submarino-removebg-preview.png';
+import imgSubmarinoVertical  from '../img/submarinoVertical-removebg-preview.png';
 import imgHit              from '../img/hit-removebg-preview.png';
 import imgSplash           from '../img/splashIndicator-removebg-preview.png';
 import imgRadar            from '../img/radar-removebg-preview.png';
@@ -23,11 +25,11 @@ import imgFire             from '../img/iconFire-removebg-preview.png';
 
 // Ship image map: horiz / vert / fire state
 const SHIP_IMGS = {
-  carrier:    { horiz: imgPortaviones,  vert: null,                  fire: imgPortavionesFire },
-  battleship: { horiz: imgBuque,        vert: null,                  fire: imgBuqueFuego },
-  submarine:  { horiz: imgSubmarino,    vert: imgSubmarinoVertical,  fire: null },
-  frigate:    { horiz: imgFragata,      vert: imgFragataVertical,    fire: null },
-  patrol:     { horiz: imgFragata,      vert: imgFragataVertical,    fire: null },
+  carrier:    { horiz: imgPortaviones, vert: imgPortavionesVertical, fire: imgPortavionesFire },
+  battleship: { horiz: imgBuque,       vert: imgDestructorVertical,  fire: imgBuqueFuego },
+  submarine:  { horiz: imgSubmarino,   vert: imgSubmarinoVertical,   fire: null },
+  frigate:    { horiz: imgFragata,     vert: imgFragataVertical,     fire: null },
+  patrol:     { horiz: imgFragata,     vert: imgFragataVertical,     fire: null },
 };
 
 // ── Missile component ──────────────────────────────────────────────────────
@@ -222,12 +224,9 @@ export default function BattleshipGame({ onBack }) {
         setWinner('player'); setPhase('over'); setAnimating(false); return;
       }
 
-      if (result.hit) {
-        setAnimating(false);
-      } else {
-        setPlayerTurn(false);
-        setTimeout(() => doAiTurn(newShots, aiShots, aiHits), 1100);
-      }
+      // Always alternate turns (hit does NOT give an extra shot)
+      setPlayerTurn(false);
+      setTimeout(() => doAiTurn(newShots, aiShots, aiHits), 1100);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, 500);
   }, [playerTurn, animating, phase, playerShots, enemyBoard, enemySunk, aiShots, aiHits]);
