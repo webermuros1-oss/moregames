@@ -7,21 +7,21 @@ import {
 import './styles/battleship.css';
 
 // ── Image assets ───────────────────────────────────────────────────────────
-import imgPortaviones        from '../img/portaviones-removebg-preview.png';
-import imgPortavionesFire    from '../img/portavionesFire-removebg-preview.png';
-import imgPortavionesVertical from '../img/portavionesVertical-removebg-preview.png';
-import imgBuque              from '../img/buque-removebg-preview.png';
-import imgBuqueFuego         from '../img/buqueFuego-removebg-preview.png';
-import imgDestructorVertical from '../img/destructorVertical-removebg-preview.png';
-import imgFragata            from '../img/fragata-removebg-preview.png';
-import imgFragataVertical    from '../img/fragataVertical-removebg-preview.png';
-import imgSubmarino          from '../img/submarino-removebg-preview.png';
-import imgSubmarinoVertical  from '../img/submarinoVertical-removebg-preview.png';
-import imgHit              from '../img/hit-removebg-preview.png';
-import imgSplash           from '../img/splashIndicator-removebg-preview.png';
-import imgRadar            from '../img/radar-removebg-preview.png';
-import imgOcean            from '../img/tileOcean.png';
-import imgFire             from '../img/iconFire-removebg-preview.png';
+import imgPortaviones        from './img/portaviones-removebg-preview.png';
+import imgPortavionesFire    from './img/portavionesFire-removebg-preview.png';
+import imgPortavionesVertical from './img/portavionesVertical-removebg-preview.png';
+import imgBuque              from './img/buque-removebg-preview.png';
+import imgBuqueFuego         from './img/buqueFuego-removebg-preview.png';
+import imgDestructorVertical from './img/destructorVertical-removebg-preview.png';
+import imgFragata            from './img/fragata-removebg-preview.png';
+import imgFragataVertical    from './img/fragataVertical-removebg-preview.png';
+import imgSubmarino          from './img/submarino-removebg-preview.png';
+import imgSubmarinoVertical  from './img/submarinoVertical-removebg-preview.png';
+import imgHit              from './img/hit-removebg-preview.png';
+import imgSplash           from './img/splashIndicator-removebg-preview.png';
+import imgRadar            from './img/radar-removebg-preview.png';
+import imgOcean            from './img/tileOcean.png';
+import imgFire             from './img/iconFire-removebg-preview.png';
 
 // Ship image map: horiz / vert / fire state
 const SHIP_IMGS = {

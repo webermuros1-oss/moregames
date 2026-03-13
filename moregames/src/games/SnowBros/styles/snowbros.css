@@ -1,0 +1,264 @@
+/* ─────────────────────────────────────────────────────────────
+   SNOW BROS STYLE — CSS
+   ───────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* ── Wrapper principal ──────────────────────────────────────── */
+.snow-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  background: linear-gradient(160deg, #0a1628 0%, #0d2b45 60%, #0a1628 100%);
+  padding: 0 0 16px;
+  font-family: 'Press Start 2P', monospace;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow: hidden;
+}
+
+/* ── Topbar ─────────────────────────────────────────────────── */
+.snow-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 480px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+}
+
+.snow-back-btn {
+  background: transparent;
+  border: 2px solid #7dd3fc;
+  color: #7dd3fc;
+  font-family: inherit;
+  font-size: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.snow-back-btn:hover { background: rgba(125,211,252,0.15); }
+
+.snow-title-small {
+  color: #a8d8ff;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+/* ── HUD ────────────────────────────────────────────────────── */
+.snow-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 480px;
+  padding: 4px 12px 6px;
+  box-sizing: border-box;
+  background: rgba(0,0,0,0.4);
+  border-bottom: 2px solid rgba(125,211,252,0.3);
+}
+
+.snow-hud-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.snow-hud-label {
+  font-size: 6px;
+  color: #7dd3fc;
+  letter-spacing: 1px;
+}
+
+.snow-hud-value {
+  font-size: 10px;
+  color: #ffffff;
+}
+
+.snow-heart {
+  color: #f87171;
+  font-size: 12px;
+  margin: 0 1px;
+  display: inline-block;
+  animation: heartbeat 1s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%,100% { transform: scale(1);    }
+  50%      { transform: scale(1.15); }
+}
+
+/* ── Canvas wrap ────────────────────────────────────────────── */
+.snow-canvas-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  line-height: 0;
+}
+
+.snow-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  border: 2px solid rgba(125,211,252,0.25);
+  border-radius: 4px;
+}
+
+/* ── Overlays ───────────────────────────────────────────────── */
+.snow-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(2px);
+  border-radius: 4px;
+  z-index: 10;
+}
+
+.snow-overlay-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background: rgba(13,27,69,0.95);
+  border: 3px solid #7dd3fc;
+  border-radius: 8px;
+  padding: 24px 32px;
+  text-align: center;
+}
+
+.snow-overlay-box.boss-stage {
+  border-color: #ffd700;
+  background: rgba(40,10,0,0.97);
+  box-shadow: 0 0 28px #ff4400, 0 0 60px rgba(255,68,0,0.3);
+  animation: boss-pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes boss-pulse {
+  from { box-shadow: 0 0 20px #ff4400, 0 0 50px rgba(255,68,0,0.2); }
+  to   { box-shadow: 0 0 38px #ffd700, 0 0 80px rgba(255,215,0,0.35); }
+}
+
+.snow-overlay-level {
+  font-size: 22px;
+  color: #ffd700;
+  text-shadow: 0 0 12px #ff8c00;
+  margin: 0;
+}
+
+.snow-overlay-title {
+  font-size: 20px;
+  margin: 0;
+}
+.snow-overlay-title.red  { color: #f87171; text-shadow: 0 0 10px #dc2626; }
+.snow-overlay-title.gold { color: #ffd700; text-shadow: 0 0 12px #ff8c00; }
+
+.snow-overlay-sub {
+  font-size: 8px;
+  color: #a8d8ff;
+  margin: 0;
+}
+
+.snow-overlay-btn {
+  background: linear-gradient(135deg, #1d6fa4, #0ea5e9);
+  border: 2px solid #7dd3fc;
+  color: #fff;
+  font-family: inherit;
+  font-size: 9px;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 6px;
+  letter-spacing: 1px;
+  transition: transform 0.1s, box-shadow 0.1s;
+  min-width: 160px;
+}
+.snow-overlay-btn:hover  { transform: scale(1.04); box-shadow: 0 0 12px #0ea5e9; }
+.snow-overlay-btn:active { transform: scale(0.97); }
+.snow-overlay-btn.secondary {
+  background: transparent;
+  border-color: #475569;
+  color: #94a3b8;
+}
+
+/* ── Controles táctiles ─────────────────────────────────────── */
+.snow-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 480px;
+  padding: 10px 12px 0;
+  box-sizing: border-box;
+  gap: 16px;
+}
+
+.snow-dpad,
+.snow-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.snow-btn {
+  background: rgba(125,211,252,0.12);
+  border: 2px solid rgba(125,211,252,0.5);
+  color: #e0f2fe;
+  font-family: inherit;
+  font-size: 14px;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+  transition: background 0.1s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+.snow-btn small {
+  font-size: 5px;
+  color: #7dd3fc;
+  display: block;
+  margin-top: 2px;
+}
+
+.snow-btn:active,
+.snow-btn.pressed {
+  background: rgba(125,211,252,0.35);
+  transform: scale(0.93);
+}
+
+.action-shoot {
+  border-color: rgba(167,243,208,0.6);
+  color: #a7f3d0;
+  background: rgba(167,243,208,0.1);
+  font-size: 18px;
+}
+
+.action-jump {
+  border-color: rgba(253,224,71,0.6);
+  color: #fde047;
+  background: rgba(253,224,71,0.1);
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 520px) {
+  .snow-btn { width: 52px; height: 52px; font-size: 13px; }
+}
+
+@media (min-width: 600px) {
+  /* En escritorio los controles táctiles son menos necesarios */
+  .snow-controls { opacity: 0.5; pointer-events: none; }
+  .snow-controls:hover { opacity: 1; pointer-events: auto; }
+}
