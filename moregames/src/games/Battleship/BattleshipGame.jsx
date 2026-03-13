@@ -49,38 +49,47 @@ const Missile = ({ missile }) => {
 // ── Ship art renderer ──────────────────────────────────────────────────────
 const ShipArt = ({ ship, row, col, horiz, cellSize, sunk, hit }) => {
   const size = ship.size;
-  const w    = horiz ? cellSize * size - 4 : cellSize - 6;
-  const h    = horiz ? cellSize - 6        : cellSize * size - 4;
-  const left = col * cellSize + 3;
-  const top  = row * cellSize + 3;
+  // Container dimensions: full span with 2px margin each side
+  const w    = horiz ? cellSize * size - 4 : cellSize - 4;
+  const h    = horiz ? cellSize - 4        : cellSize * size - 4;
+  const left = col * cellSize + 2;
+  const top  = row * cellSize + 2;
 
   const imgs = SHIP_IMGS[ship.id] || SHIP_IMGS.frigate;
-  // Pick image: fire state → fire image; vertical w/ variant → vert; else horiz (rotate via CSS)
   const isOnFire = hit && !sunk && imgs.fire;
   const src = isOnFire
     ? imgs.fire
     : (horiz ? imgs.horiz : (imgs.vert || imgs.horiz));
-  const rotateFallback = !horiz && !imgs.vert;
+
+  // Ships with no vertical image: rotate the horizontal one.
+  // We swap width/height on the <img> then rotate so it fills the vertical container.
+  const needsRotate = !horiz && !imgs.vert;
+
+  const imgStyle = needsRotate
+    ? {
+        position: 'absolute',
+        left: '50%',
+        top: '50%',
+        // After 90° rotation visual width = h (tall dim), visual height = w (narrow dim)
+        width: h,
+        height: w,
+        objectFit: 'fill',
+        transform: 'translate(-50%, -50%) rotate(90deg)',
+        filter: sunk ? 'grayscale(1) brightness(0.35)' : undefined,
+      }
+    : {
+        width: '100%',
+        height: '100%',
+        objectFit: 'fill',
+        filter: sunk ? 'grayscale(1) brightness(0.35)' : undefined,
+      };
 
   return (
     <div
       className={`bs-ship-art${sunk ? ' bs-ship-art--sunk' : ''}`}
-      style={{ left, top, width: w, height: h }}
+      style={{ left, top, width: w, height: h, overflow: 'hidden' }}
     >
-      <img
-        src={src}
-        alt={ship.name}
-        draggable={false}
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
-          transform: rotateFallback ? 'rotate(90deg)' : undefined,
-          filter: sunk ? 'grayscale(1) brightness(0.35)' : undefined,
-          transition: 'filter 0.3s',
-        }}
-      />
-      {/* Fire overlay for ships without a fire variant */}
+      <img src={src} alt={ship.name} draggable={false} style={imgStyle} />
       {hit && !sunk && !imgs.fire && (
         <img src={imgFire} alt="fire" className="bs-ship-fire-img" />
       )}
@@ -117,11 +126,15 @@ export default function BattleshipGame({ onBack }) {
   const playerGridRef = useRef(null);
   const enemyGridRef  = useRef(null);
   const cellSizeRef   = useRef(36);
+  const [cellSize, setCellSize] = useState(36);
 
   useEffect(() => {
     const measure = () => {
-      if (playerGridRef.current)
-        cellSizeRef.current = playerGridRef.current.getBoundingClientRect().width / BOARD_SIZE;
+      if (playerGridRef.current) {
+        const cs = playerGridRef.current.getBoundingClientRect().width / BOARD_SIZE;
+        cellSizeRef.current = cs;
+        setCellSize(cs);
+      }
     };
     measure();
     window.addEventListener('resize', measure);
@@ -295,7 +308,7 @@ export default function BattleshipGame({ onBack }) {
     const shots   = isPlayer ? aiShots     : playerShots;
     const sunkSet = isPlayer ? playerSunk  : enemySunk;
     const gridRef = isPlayer ? playerGridRef : enemyGridRef;
-    const cs      = cellSizeRef.current;
+    const cs      = cellSize;
 
     const prevCells = new Set();
     let   prevValid = false;
