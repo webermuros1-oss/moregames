@@ -75,14 +75,14 @@ const ShipArt = ({ ship, row, col, horiz, cellSize, sunk, hit }) => {
         // After 90° rotation visual width = h (tall dim), visual height = w (narrow dim)
         width: h,
         height: w,
-        objectFit: 'fill',
+        objectFit: 'contain',
         transform: 'translate(-50%, -50%) rotate(90deg)',
         filter: sunk ? 'grayscale(1) brightness(0.35)' : undefined,
       }
     : {
         width: '100%',
         height: '100%',
-        objectFit: 'fill',
+        objectFit: 'contain',
         filter: sunk ? 'grayscale(1) brightness(0.35)' : undefined,
       };
 
