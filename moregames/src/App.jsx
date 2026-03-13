@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import PuzzleGame from './games/Puzzle/PuzzleGame';
+import PuzzleGame     from './games/Puzzle/PuzzleGame';
 import BattleshipGame from './games/Battleship/BattleshipGame';
+import SnowBrosGame   from './games/SnowBros/SnowBrosGame';
 import './dashboard.css';
 
 const GAMES = [
@@ -22,6 +23,15 @@ const GAMES = [
     bg: 'linear-gradient(135deg, #0c1a2e 0%, #0a3260 50%, #0c1a2e 100%)',
     badge: 'NUEVO',
   },
+  {
+    id: 'snowbros',
+    name: 'Snow Bros',
+    tagline: 'Congela enemigos · ¡a rodar!',
+    emoji: '❄',
+    accent: '#7dd3fc',
+    bg: 'linear-gradient(135deg, #0a1628 0%, #0d2b45 50%, #0a1628 100%)',
+    badge: 'NUEVO',
+  },
 ];
 
 export default function App() {
@@ -29,6 +39,7 @@ export default function App() {
 
   if (current === 'puzzle')     return <PuzzleGame onBack={() => setCurrent(null)} />;
   if (current === 'battleship') return <BattleshipGame onBack={() => setCurrent(null)} />;
+  if (current === 'snowbros')   return <SnowBrosGame onBack={() => setCurrent(null)} />;
 
   return (
     <div className="dashboard">
