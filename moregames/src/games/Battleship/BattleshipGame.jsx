@@ -59,32 +59,14 @@ const ShipArt = ({ ship, row, col, horiz, cellSize, sunk, hit }) => {
 
   const imgs = SHIP_IMGS[ship.id] || SHIP_IMGS.frigate;
   const isOnFire = hit && !sunk && imgs.fire;
-  const src = isOnFire
-    ? imgs.fire
-    : (horiz ? imgs.horiz : (imgs.vert || imgs.horiz));
+  const src = isOnFire ? imgs.fire : (horiz ? imgs.horiz : imgs.vert);
 
-  // Ships with no vertical image: rotate the horizontal one.
-  // We swap width/height on the <img> then rotate so it fills the vertical container.
-  const needsRotate = !horiz && !imgs.vert;
-
-  const imgStyle = needsRotate
-    ? {
-        position: 'absolute',
-        left: '50%',
-        top: '50%',
-        // After 90° rotation visual width = h (tall dim), visual height = w (narrow dim)
-        width: h,
-        height: w,
-        objectFit: 'contain',
-        transform: 'translate(-50%, -50%) rotate(90deg)',
-        filter: sunk ? 'grayscale(1) brightness(0.35)' : undefined,
-      }
-    : {
-        width: '100%',
-        height: '100%',
-        objectFit: 'contain',
-        filter: sunk ? 'grayscale(1) brightness(0.35)' : undefined,
-      };
+  const imgStyle = {
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain',
+    filter: sunk ? 'grayscale(1) brightness(0.35)' : undefined,
+  };
 
   return (
     <div
