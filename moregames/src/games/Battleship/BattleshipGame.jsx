@@ -343,8 +343,6 @@ export default function BattleshipGame({ onBack }) {
                   onMouseEnter={isPlayer && phase === 'placement' ? () => setHover({ row: r, col: c }) : undefined}
                   onMouseLeave={isPlayer && phase === 'placement' ? () => setHover(null) : undefined}
                 >
-                  {shot === 'hit'  && <img src={imgHit}    className="bs-marker-img" alt="hit" />}
-                  {shot === 'miss' && <img src={imgSplash} className="bs-marker-img" alt="miss" />}
                   {exp && <div className={`bs-explosion bs-explosion--${exp.type}`} />}
                 </div>
               );
@@ -366,6 +364,23 @@ export default function BattleshipGame({ onBack }) {
               />
             );
           })}
+
+          {/* Hit/miss markers — rendered after ship art so always on top */}
+          {Array.from({ length: BOARD_SIZE }, (_, r) =>
+            Array.from({ length: BOARD_SIZE }, (_, c) => {
+              const shot = shots[`${r}-${c}`];
+              if (!shot) return null;
+              return (
+                <img
+                  key={`marker-${r}-${c}`}
+                  src={shot === 'hit' ? imgHit : imgSplash}
+                  className="bs-marker-img"
+                  alt={shot}
+                  style={{ left: c * cs + cs * 0.08, top: r * cs + cs * 0.08, width: cs * 0.84, height: cs * 0.84 }}
+                />
+              );
+            })
+          )}
         </div>
       </div>
     );
