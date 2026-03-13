@@ -66,20 +66,23 @@ function App() {
   // ── Lógica compartida de movimiento del puntero ─────────────────────────
   const updatePointer = (clientX, clientY) => {
     setPointerPos({ x: clientX, y: clientY });
-    if (!boardRef.current) return;
+    if (!boardRef.current || !dragStateRef.current) return;
 
     const rect = boardRef.current.getBoundingClientRect();
     const cs = rect.width / BOARD_SIZE;
-    const col = Math.floor((clientX - rect.left) / cs);
-    const row = Math.floor((clientY - rect.top) / cs);
+    const cursorCol = Math.floor((clientX - rect.left) / cs);
+    const cursorRow = Math.floor((clientY - rect.top) / cs);
 
-    if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+    // Centrar la pieza en el cursor (no top-left)
+    const piece = dragStateRef.current.piece;
+    const pieceRows = piece.shape.length;
+    const pieceCols = Math.max(...piece.shape.map(r => r.length));
+    const col = cursorCol - Math.floor(pieceCols / 2);
+    const row = cursorRow - Math.floor(pieceRows / 2);
+
+    if (cursorRow >= 0 && cursorRow < BOARD_SIZE && cursorCol >= 0 && cursorCol < BOARD_SIZE) {
       const cell = { row, col };
-      const valid = canPlacePiece(
-        boardStateRef.current,
-        dragStateRef.current.piece,
-        row, col
-      );
+      const valid = canPlacePiece(boardStateRef.current, piece, row, col);
       hoverCellRef.current = cell;
       isValidRef.current = valid;
       setHoverCell(cell);
@@ -304,6 +307,8 @@ function App() {
           x={pointerPos.x}
           y={pointerPos.y}
           cellSize={boardCellSizeRef.current}
+          hoverCell={hoverCell}
+          boardRef={boardRef}
         />
       )}
 

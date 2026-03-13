@@ -1,32 +1,37 @@
-/**
- * DragGhost — pieza fantasma que sigue el cursor al arrastrar.
- *
- * Usa la prop `cellSize` para igualar exactamente el tamaño de las
- * celdas del tablero: así el ghost encaja 1:1 al soltar la pieza.
- */
+import { BOARD_SIZE } from '../logic/boardUtils';
+
 const GAP = 2;
 
-const DragGhost = ({ piece, x, y, cellSize = 56 }) => {
+const DragGhost = ({ piece, x, y, cellSize = 56, hoverCell, boardRef }) => {
   if (!piece) return null;
 
   const cols = Math.max(...piece.shape.map((row) => row.length));
   const rows = piece.shape.length;
 
-  // Centrar el ghost bajo el cursor
-  const offsetX = (cols * (cellSize + GAP)) / 2;
-  const offsetY = (rows * (cellSize + GAP)) / 2;
+  let left, top;
+
+  if (hoverCell && boardRef?.current) {
+    // Snapeado al tablero: posición exacta de la celda hoverCell
+    const rect = boardRef.current.getBoundingClientRect();
+    const cs = rect.width / BOARD_SIZE;
+    left = rect.left + hoverCell.col * cs;
+    top  = rect.top  + hoverCell.row * cs;
+  } else {
+    // Fuera del tablero: centrado en el cursor
+    const offsetX = (cols * (cellSize + GAP)) / 2;
+    const offsetY = (rows * (cellSize + GAP)) / 2;
+    left = x - offsetX;
+    top  = y - offsetY;
+  }
 
   return (
     <div
       style={{
         position: 'fixed',
-        left: x - offsetX,
-        top: y - offsetY,
+        left,
+        top,
         pointerEvents: 'none',
         zIndex: 9999,
-        // Ligero aumento de escala + glow del color de la pieza
-        transform: 'scale(1.06)',
-        transformOrigin: 'center center',
         filter: `drop-shadow(0 0 10px ${piece.color}) drop-shadow(0 6px 18px rgba(0,0,0,0.7))`,
       }}
     >
