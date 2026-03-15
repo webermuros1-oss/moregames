@@ -105,7 +105,7 @@ export default function TetillasGame({ onBack }) {
       <div className="tt-hud">
         <div className="tt-hud-lives">
           {Array.from({ length: Math.max(0, lives) }).map((_, i) => (
-            <span key={i} className="tt-heart">🐚</span>
+            <span key={i} className="tt-heart">🧀</span>
           ))}
         </div>
         <div className="tt-hud-level">NIVEL {levelIndex + 1}</div>

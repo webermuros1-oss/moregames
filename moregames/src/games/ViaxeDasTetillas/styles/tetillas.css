@@ -296,10 +296,62 @@
   text-shadow: 0 0 24px rgba(255,200,0,0.5), 2px 2px 0 #3a3000;
 }
 
+/* ── Side controls: ocultos por defecto (se muestran solo en landscape) ─── */
+.tt-side-controls { display: none; }
+
 /* ── Landscape ──────────────────────────────────────────────────────────── */
-@media (orientation: landscape) and (max-height: 500px) {
-  .tt-hud         { padding: 3px 10px; }
-  .tetillas-canvas { max-width: 100%; }
-  .tetillas-controls { padding: 4px 10px; }
-  .tt-btn         { width: 44px; height: 44px; font-size: 1rem; }
+@media (orientation: landscape) {
+  .tt-game-screen {
+    overflow: hidden;
+  }
+
+  .tt-hud {
+    padding: 3px 10px;
+    max-width: 100%;
+  }
+
+  .tetillas-wrapper {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 2px 4px;
+  }
+
+  .tetillas-canvas {
+    width: auto;
+    height: calc(100dvh - 44px);
+    max-height: 310px;
+    max-width: calc(100vw - 180px);
+  }
+
+  /* Controles laterales visibles en landscape */
+  .tt-side-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  /* Controles inferiores ocultos en landscape */
+  .tetillas-controls { display: none; }
+
+  /* Botones algo más pequeños */
+  .tt-dpad {
+    grid-template-columns: repeat(3, 40px);
+    grid-template-rows:    repeat(3, 40px);
+  }
+  .tt-shoot { width: 50px; height: 50px; font-size: 1.3rem; }
+}
+
+/* Landscape en teléfonos muy bajos */
+@media (orientation: landscape) and (max-height: 400px) {
+  .tetillas-canvas { max-height: 260px; }
+  .tt-dpad {
+    grid-template-columns: repeat(3, 36px);
+    grid-template-rows:    repeat(3, 36px);
+  }
+  .tt-shoot { width: 44px; height: 44px; font-size: 1.1rem; }
 }
