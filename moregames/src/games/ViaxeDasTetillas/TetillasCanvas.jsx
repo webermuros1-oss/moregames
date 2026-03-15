@@ -153,8 +153,41 @@ export default function TetillasCanvas({ levelIndex, onScore, onDie, onWin, paus
     return () => cancelAnimationFrame(rafRef.current);
   }, [onScore, onDie, onWin]);
 
+  const dpadJSX = (
+    <div className="tt-dpad">
+      <div className="tt-dpad-empty" />
+      <button className="tt-btn tt-dpad-up"
+        onPointerDown={() => press('jump')}
+        onPointerUp={() => release('jump')}
+        onPointerLeave={() => release('jump')}>▲</button>
+      <div className="tt-dpad-empty" />
+      <button className="tt-btn tt-dpad-left"
+        onPointerDown={() => press('left')}
+        onPointerUp={() => release('left')}
+        onPointerLeave={() => release('left')}>◀</button>
+      <div className="tt-dpad-center" />
+      <button className="tt-btn tt-dpad-right"
+        onPointerDown={() => press('right')}
+        onPointerUp={() => release('right')}
+        onPointerLeave={() => release('right')}>▶</button>
+      <div className="tt-dpad-empty" />
+      <button className="tt-btn tt-dpad-down" disabled>▼</button>
+      <div className="tt-dpad-empty" />
+    </div>
+  );
+
+  const shootJSX = (
+    <button className="tt-shoot"
+      onPointerDown={() => press('shoot')}
+      onPointerUp={() => release('shoot')}
+      onPointerLeave={() => release('shoot')}>🧀</button>
+  );
+
   return (
     <div className="tetillas-wrapper">
+      {/* Controles izquierda (solo landscape) */}
+      <div className="tt-side-controls tt-left-pad">{dpadJSX}</div>
+
       <canvas
         ref={canvasRef}
         width={CANVAS_W}
@@ -162,39 +195,13 @@ export default function TetillasCanvas({ levelIndex, onScore, onDie, onWin, paus
         className="tetillas-canvas"
       />
 
-      {/* Controles táctiles */}
+      {/* Controles derecha (solo landscape) */}
+      <div className="tt-side-controls tt-right-pad">{shootJSX}</div>
+
+      {/* Controles inferiores (solo portrait) */}
       <div className="tetillas-controls">
-        {/* Cruceta Nintendo */}
-        <div className="tt-dpad">
-          {/* Fila 1 */}
-          <div className="tt-dpad-empty" />
-          <button className="tt-btn tt-dpad-up"
-            onPointerDown={() => press('jump')}
-            onPointerUp={() => release('jump')}
-            onPointerLeave={() => release('jump')}>▲</button>
-          <div className="tt-dpad-empty" />
-          {/* Fila 2 */}
-          <button className="tt-btn tt-dpad-left"
-            onPointerDown={() => press('left')}
-            onPointerUp={() => release('left')}
-            onPointerLeave={() => release('left')}>◀</button>
-          <div className="tt-dpad-center" />
-          <button className="tt-btn tt-dpad-right"
-            onPointerDown={() => press('right')}
-            onPointerUp={() => release('right')}
-            onPointerLeave={() => release('right')}>▶</button>
-          {/* Fila 3 */}
-          <div className="tt-dpad-empty" />
-          <button className="tt-btn tt-dpad-down" disabled>▼</button>
-          <div className="tt-dpad-empty" />
-        </div>
-        {/* Botón de disparo */}
-        <div className="tt-action-btns">
-          <button className="tt-shoot"
-            onPointerDown={() => press('shoot')}
-            onPointerUp={() => release('shoot')}
-            onPointerLeave={() => release('shoot')}>🐚</button>
-        </div>
+        {dpadJSX}
+        <div className="tt-action-btns">{shootJSX}</div>
       </div>
     </div>
   );

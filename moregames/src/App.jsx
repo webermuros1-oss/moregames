@@ -38,7 +38,7 @@ const GAMES = [
     id: 'tetillas',
     name: 'Rompe Queixos',
     tagline: 'Rompe los quesos',
-    emoji: '🐚',
+    emoji: '🧀',
     accent: '#48c848',
     bg: 'linear-gradient(135deg, #062010 0%, #0e3818 50%, #062010 100%)',
     badge: 'NUEVO',
