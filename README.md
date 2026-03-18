@@ -2,6 +2,8 @@
 
 > Colección de minijuegos arcade construidos con **React 19 + Vite** y sonido 100 % sintetizado — sin archivos de audio, sin dependencias pesadas.
 
+![Dashboard](docs/screenshots/dashboard.png)
+
 ---
 
 ## Juegos disponibles
@@ -10,6 +12,8 @@
 > *Encaja piezas · Completa líneas*
 
 Clon de Block Puzzle: arrastra 3 piezas a un tablero 9×9 y completa filas o columnas para limpiarlas. Combo BOOM al limpiar varias a la vez, récord persistente en `localStorage` y música electrónica en Do mayor.
+
+![Puzzle](docs/screenshots/puzzle.png)
 
 | Mecánica | Detalle |
 |---|---|
@@ -24,6 +28,8 @@ Clon de Block Puzzle: arrastra 3 piezas a un tablero 9×9 y completa filas o col
 
 Hundir la flota contra una IA con lógica de targeting inteligente (hunt/destroy mode). Fase de colocación manual o aleatoria, animaciones de misiles en vuelo, sprites de barcos con barras de salud. Música de marcha naval en Mi menor.
 
+![Batalla Naval](docs/screenshots/battleship.png)
+
 | Mecánica | Detalle |
 |---|---|
 | Barcos | 5 tipos: portaviones, buque, submarino, fragata, patrulla |
@@ -36,7 +42,9 @@ Hundir la flota contra una IA con lógica de targeting inteligente (hunt/destroy
 ### Snow Kids
 > *Congela enemigos · ¡A rodar!*
 
-Clon de Snow Bros. Plataformas en Canvas 2D: el jugador congela enemigos con nieve y los lanza como bolas rodantes contra otros. Múltiples niveles, nivel boss con Super Jefe, HUD de vidas, música de fondo generada por scheduler de Web Audio y D-pad táctil para móvil.
+Clon de Snow Bros. Plataformas en Canvas 2D: el jugador congela enemigos con nieve y los lanza como bolas rodantes contra otros. Múltiples niveles, nivel boss con Super Jefe, HUD de vidas y D-pad táctil para móvil.
+
+![Snow Kids](docs/screenshots/snowkids.png)
 
 | Mecánica | Detalle |
 |---|---|
@@ -51,6 +59,8 @@ Clon de Snow Bros. Plataformas en Canvas 2D: el jugador congela enemigos con nie
 > *Pang galego · Estilo Arcade*
 
 Clon de Pang ambientado en Galicia. Dispara mexillóns para romper tetillas que rebotan por la pantalla. Cada impacto las divide en dos hasta destruirlas. 5 niveles con melodías folk/gaita únicas.
+
+![Rompe Queixos](docs/screenshots/rompequeixos.png)
 
 | Mecánica | Detalle |
 |---|---|

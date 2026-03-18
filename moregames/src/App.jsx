@@ -3,6 +3,7 @@ import PuzzleGame     from './games/Puzzle/PuzzleGame';
 import BattleshipGame from './games/Battleship/BattleshipGame';
 import SnowBrosGame   from './games/SnowBros/SnowBrosGame';
 import TetillasGame   from './games/ViaxeDasTetillas/TetillasGame';
+import BikeTrialGame  from './games/BikeTrials/BikeTrialGame';
 import appLogo        from './assets/logo app juegos.jpg';
 import './dashboard.css';
 
@@ -43,6 +44,15 @@ const GAMES = [
     bg: 'linear-gradient(135deg, #062010 0%, #0e3818 50%, #062010 100%)',
     badge: 'NUEVO',
   },
+  {
+    id: 'biketrial',
+    name: 'BikeTrial',
+    tagline: 'Física · Equilibrio · Terreno',
+    emoji: '🏍',
+    accent: '#f5c542',
+    bg: 'linear-gradient(135deg, #1a3a1a 0%, #0d2010 50%, #071508 100%)',
+    badge: 'NUEVO',
+  },
 ];
 
 export default function App() {
@@ -51,7 +61,8 @@ export default function App() {
   if (current === 'puzzle')     return <PuzzleGame onBack={() => setCurrent(null)} />;
   if (current === 'battleship') return <BattleshipGame onBack={() => setCurrent(null)} />;
   if (current === 'snowbros')   return <SnowBrosGame onBack={() => setCurrent(null)} />;
-  if (current === 'tetillas')   return <TetillasGame onBack={() => setCurrent(null)} />;
+  if (current === 'tetillas')   return <TetillasGame   onBack={() => setCurrent(null)} />;
+  if (current === 'biketrial')  return <BikeTrialGame  onBack={() => setCurrent(null)} />;
 
   return (
     <div className="dashboard">
